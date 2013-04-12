@@ -41,6 +41,7 @@ module AppBuild
 
     define_step "setup root" do
       #FileUtils.mkdir_p(root) unless FileTest.exist?(root)
+      FileUtils.mkdir_p root unless FileTest.exist?(root)
       ec "cd #{root} && rm -rf *"
       FileUtils.mkdir "#{root}/container"
       ec "cd #{root}/container && git init"
@@ -48,6 +49,7 @@ module AppBuild
 
 
     define_step "create app" do
+      FileUtils.mkdir_p "#{root}/container" unless FileTest.exist?("#{root}/container")
       #FileUtils.rm_r "#{path}" if FileTest.exist?(path)
       ec "cd #{root}/container && rails new #{name}"
       #FileUtils.cp_r "#{path}_fresh",path
