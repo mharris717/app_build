@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "app_build.gemspec",
     "lib/app_build.rb",
     "lib/app_build/base.rb",
     "lib/app_build/column.rb",
