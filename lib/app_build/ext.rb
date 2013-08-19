@@ -44,3 +44,18 @@ class Object
     !blank?
   end
 end
+
+class String
+  def pluralize
+    if self == 'match'
+      "matches"
+    else
+      "#{self}s"
+    end
+  end
+end
+class Symbol
+  def pluralize
+    to_s.pluralize
+  end
+end

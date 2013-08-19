@@ -6,6 +6,9 @@ module AppBuild
     def path
       base.path
     end
+    def git(*args)
+      base.git(*args)
+    end
   end
 
   class Base
@@ -14,6 +17,9 @@ module AppBuild
     attr_accessor :root, :name, :root_resource
     def path
       "#{root}/container/#{name}"
+    end
+    def app_name
+      name.to_s[0..0].upcase + name.to_s[1..-1].downcase
     end
     fattr(:gems) { [] }
     fattr(:resources) { [] }
@@ -38,13 +44,18 @@ module AppBuild
       end
     end
 
+    def git(cmd,ops={})
+      cmd = "cd #{root}/container && git #{cmd}"
+      ec cmd, ops
+    end
+
 
     define_step "setup root" do
       #FileUtils.mkdir_p(root) unless FileTest.exist?(root)
       FileUtils.mkdir_p root unless FileTest.exist?(root)
-      ec "cd #{root} && rm -rf *"
+      ec "cd #{root} && rm -rf container" if FileTest.exist?("#{root}/container")
       FileUtils.mkdir "#{root}/container"
-      ec "cd #{root}/container && git init"
+      git "init"
     end
 
 
@@ -112,7 +123,7 @@ module AppBuild
 
     define_step "setup root route" do
       FileUtils.rm "#{path}/public/index.html"
-      run_cmd "git rm public/index.html"
+      git "rm #{name}/public/index.html"
       File.append_at_line "#{path}/config/routes.rb",2,"  root :to => '#{root_resource}#index'"
     end
 
@@ -153,8 +164,9 @@ module AppBuild
         base.gems += args.map { |x| Gem.new(:name => x) }
       end
     end
-    def resource(&b)
+    def resource(name=nil,&b)
       dsl = ResourceDSL.new(:base => base)
+      dsl.name name if name.present?
       b[dsl]
       base.resources << dsl.resource
     end

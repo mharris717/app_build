@@ -1,12 +1,22 @@
 module AppBuild
   class Relation
     include FromHash
-    attr_accessor :resource, :type, :other
+    attr_accessor :resource, :type, :other, :other_prefix
+    def other_name
+      other_prefix ? "#{other_prefix}_#{other}" : other
+    end
+    def column_name
+      "#{other_name}_id"
+    end
 
     def to_s
-      arg = other.to_s
+      arg = other_name.to_s
       arg += "s" if type == :has_many
-      "#{type} :#{arg}"
+      res = "#{type} :#{arg}"
+      if other_prefix
+        res << ", :class_name => '#{other_resource.class_name}'"
+      end
+      res
     end
 
     def other_resource
@@ -18,7 +28,7 @@ module AppBuild
     end
 
     def opposite
-      Relation.new(:resource => other_resource, :type => opp_type, :other => resource.name)
+      Relation.new(:resource => other_resource, :type => opp_type, :other => resource.name, :other_prefix => other_prefix)
     end
   end
 end

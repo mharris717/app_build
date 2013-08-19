@@ -27,10 +27,10 @@ module AppBuild
     end
 
     def commit!(obj)
-      return if obj.run_cmd("git status", :silent => true, :path => :container) =~ /nothing to commit/
+      return if obj.git("status", :silent => true, :path => :container) =~ /nothing to commit/
       k = key(obj)
-      obj.run_cmd "git add .", :silent => true, :path => :container
-      obj.run_cmd "git commit -m \"#{k}\"", :silent => true, :path => :container
+      obj.git "add .", :silent => true
+      obj.git "commit -m \"#{k}\"", :silent => true
     end
 
     def key(obj)

@@ -37,10 +37,11 @@ module AppBuild
 
       define_step "link into rails app" do
         run_cmd "ln -s #{path} #{base.path}/public/front"
+        git "add #{base.name}/public/front"
       end
 
       define_step "add guard to Procfile" do
-        File.append "#{base.path}/Procfile","front_guard: guard -G public/front/Guardfile -w public/front"
+        File.append "#{base.path}/Procfile","front_guard: guard -G #{path}/Guardfile -w #{path}\n"
       end
 
       define_step "guardfile" do
@@ -60,12 +61,21 @@ EOF
         File.create "#{path}/Guardfile",str
       end
 
+      define_step "fix store" do
+        File.gsub "#{path}/js/store.js","adapter: DS.LSAdapter.create()","adapter: 'DS.RESTAdapter'"
+        File.append "#{path}/js/store.js","\n\nDS.RESTAdapter.reopen({url: 'http://localhost:5001'})"
+      end
+
+      define_step "make ember schema task" do
+        File.create "#{base.path}/lib/tasks/ember_schema.rake",Templates.get("ember_schema_task.rb")
+      end
+
       def pre!
         super
         AppBuild::Resource.define_step "generate ember app model" do
           ember_type = lambda do |t|
             h = {"integer" => "number", 'references' => 'number'}
-            h[t] || t
+            h[t.to_s] || t
           end
           col_str = columns.map { |c| "#{c.name}:#{ember_type[c.type]}" }.join(" ")
           run_cmd "cd ../front && ember generate --scaffold #{name} #{col_str}"

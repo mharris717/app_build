@@ -14,7 +14,7 @@ module AppBuild
     include FromHash
     attr_accessor :resource
 
-    %w(string integer).each do |col|
+    %w(string integer datetime).each do |col|
       define_method(col) do |name,ops={}|
         resource.columns << Column.new(:name => name, :type => col, :ops => ops)
       end
